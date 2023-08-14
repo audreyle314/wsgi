@@ -21,20 +21,73 @@ Consider the following URL/Response body pairs as tests:
 
 """
 
+
+def home():
+    body = """<html>
+    <body>
+    <p>Here's how to use this page: </p>
+    <p> After localhost:8080, add a slash and choose between positive and negative</p>
+    <p> Follow it with another slash then type a random integer to check whether it is positive or negative!</p>
+    </body>
+    </html>"""
+    return body
+
+
+def positive(args):
+    try:
+        arg_int = int(args)
+        if arg_int > 0:
+            response = True
+            body = "{}".format(str(response))
+        else:
+            response = False
+            body = "{}".format(str(response))
+    except (ValueError, TypeError):
+        body = "not a number."
+
+    return body
+
+
+def negative(args):
+    try:
+        arg_int = int(args)
+        if arg_int < 0:
+            response = True
+            body = "{}".format(str(response))
+        else:
+            response = False
+            body = "{}".format(str(response))
+    except (ValueError, TypeError):
+        body = "not a number."
+
+    return body
+
+
 def resolve_path(path):
     """
     Should return two values: a callable and an iterable of
     arguments, based on the path.
     """
 
-    # TODO: Provide correct values for func and args. The
-    # examples provide the correct *syntax*, but you should
-    # determine the actual values of func and args using the
-    # path.
-    func = some_func
-    args = ['25', '32']
+    funcs = {
+        '': home,
+        'positive': positive,
+        'negative': negative,
+    }
+
+    path = path.strip('/').split('/')
+
+    func_name = path[0]
+    args = path[1:]
+
+    try:
+        func = funcs[func_name]
+        print(func)
+    except KeyError:
+        raise NameError
 
     return func, args
+
 
 def application(environ, start_response):
     headers = [('Content-type', 'text/html')]
@@ -55,6 +108,7 @@ def application(environ, start_response):
         headers.append(('Content-length', str(len(body))))
         start_response(status, headers)
         return [body.encode('utf8')]
+
 
 if __name__ == '__main__':
     from wsgiref.simple_server import make_server
